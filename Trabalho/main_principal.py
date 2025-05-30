@@ -304,14 +304,18 @@ class Screen_Principal(SQL_MenuPrincipal):
         etr_tema.place(x=50, y=70,height=23,width=180)        
 
         # Grupos Cadastrados
+        conectar = self.func_conectar()
+        cursor = conectar.cursor()  
+        cursor.execute("SELECT grupo FROM Grupos")
+        dados = cursor.fetchall()
+        nomes = [linha[0] for linha in dados]
         lbl_grupos = ttk.Label(self.janela, text=f"Grupos", font=("Microsoft yahei ui light", 12), background="#ffffff")
         lbl_grupos.place(x=250, y=40)  
-        etr_grupos = ttk.Entry(self.janela, width=32, font=("Microsoft yahei ui light", 10))
+        etr_grupos = ttk.Combobox(self.janela, width=32, font=("Microsoft yahei ui light", 10), state="readonly")
+        etr_grupos['values'] = nomes
         etr_grupos.place(x=240, y=70,height=23,width=150)
         
         # Professores
-        conectar = self.func_conectar()
-        cursor = conectar.cursor()  
         cursor.execute("SELECT Nome FROM Professores")
         dados = cursor.fetchall()
         nomes = [linha[0] for linha in dados]
