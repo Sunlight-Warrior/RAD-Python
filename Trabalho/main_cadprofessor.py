@@ -1,52 +1,11 @@
-# Main Lib 
+# Libs
+import sqlite3
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
-import sqlite3
 
-class SQL_Professores():
-    
-    # Conectar Banco de dados
-    def func_conectar(self):
-        self.conectar = sqlite3.connect("banco\\banco.db")
-        self.cursor =  self.conectar.cursor()
-        
-        #DEBUG
-        print("Banco de dados criado com sucesso.")
-
-    # Desconectar Banco de dados
-    def func_desconectar(self):
-        self.conectar.close()
-
-        #DEBUG
-        print("Banco de dados desconectado com sucesso.")
-
-    # Tabela Cad_Professor
-    def func_criartabela_professores(self):
-        self.func_conectar()
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Professores(
-                Id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                Nome VARCHAR(225) NOT NULL, 
-                Cpf VARCHAR(100) NOT NULL, 
-                Rg VARCHAR(100) NOT NULL,
-                Data VARCHAR(50) NOT NULL,
-                Cep VARCHAR(30) NOT NULL,
-                Estado VARCHAR(50) NOT NULL,
-                Endereco VARCHAR(125) NOT NULL,
-                Complemento VARCHAR(40) NOT NULL,
-                Email VARCHAR(225) NOT NULL, 
-                Senha VARCHAR(25) NOT NULL,
-                Unidade VARCHAR(50) NOT NULL,
-                Telefone VARCHAR(50) NOT NULL);
-            """)
-        self.conectar.commit()
-
-        #DEBUG
-        print("Tabela criada dentro do banco de dados do programa.")
-        self.func_conectar()
-
-    # Cadastrar Professor
+# Classe SQL Cadastros
+class SQL_CadProfessores():
     def func_cadastrar_professor(self, nome, cpf, rg, data, cep, estado, endereco, complemento, email, senha, unidade, telefone):
 
         # Pegar Dados
@@ -64,7 +23,8 @@ class SQL_Professores():
         self.var_telefone = telefone
 
         # Postar dados no SQL
-        self.func_conectar()
+        self.conectar = sqlite3.connect("banco\\banco.db")
+        self.cursor =  self.conectar.cursor()
         self.cursor.execute("""
             SELECT * FROM Professores Where (Cpf =? OR Rg =? OR Email =?)""", (self.var_cpf, self.var_rg, self.var_email))
         self.check_dados = self.cursor.fetchone()
@@ -72,7 +32,7 @@ class SQL_Professores():
         # Verificar se o cadastro ja existe.
         if self.check_dados:
 
-            # dados
+            # Dados
             cpf_db = self.check_dados[2]
             rg_db = self.check_dados[3]
             email_db = self.check_dados[9]
@@ -93,7 +53,7 @@ class SQL_Professores():
                             
                 self.conectar.commit()
                 messagebox.showinfo(title="Sistema de cadastro", message="Conta criada com sucesso!")
-                self.func_desconectar()             
+                self.conectar.close()             
         else:
             
             # Verificações
@@ -112,25 +72,20 @@ class SQL_Professores():
 
                     self.conectar.commit()
                     messagebox.showinfo(title="Sistema de cadastro", message="Conta criada com sucesso!")
-                    self.func_desconectar()
+                    self.conectar.close()
             except:
-                pass
+                self.conectar.close()
 
-class Screen_CadProfessor(SQL_Professores):
+# Classe da tela principal
+class Screen_CadProfessor(SQL_CadProfessores):
 
     # Main
     def __init__(self, master):
-        super().__init__()
-        self.tela_cadprofessor = Toplevel(master)
 
         # Configurações da tela
+        super().__init__()
+        self.tela_cadprofessor = Toplevel(master)     
         self.configuracao_janela()
-
-        # SQL
-        self.func_criartabela_professores()        
-
-        # Carregar Tela
-        #self.tela_cadprofessor.mainloop()
 
     # Configuração da janela
     def configuracao_janela(self):

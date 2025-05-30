@@ -1,55 +1,41 @@
-# Main Lib 
+# Libs
 import os
+import sqlite3
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from PIL import Image, ImageTk
+from main_bancodados import SQL_Main 
 from main_cadprofessor import Screen_CadProfessor
 from main_principal import Screen_Principal
-import sqlite3
 
 # PATH DIR
 dir_programa = os.path.dirname(__file__)
 
-# SQL MAIN
+# Classe de manipular o SQL para login
 class SQL_Login():
-    
-    # Conectar Banco de dados
-    def func_conectar_login(self):
-        self.conectar = sqlite3.connect("banco\\banco.db")
-        self.cursor =  self.conectar.cursor()
-
-    # Desconectar Banco de dados
-    def func_desconectar_login(self):
-        self.conectar.close()
-    
-    # Login Check
     def func_efetuar_login(self, email, senha):
 
         # Dados Para O SQL
         self.var_email = email
         self.var_senha = senha
-        
+
         if(self.var_email == "" or self.var_senha == ""):
             messagebox.showerror(title="Sistema de login", message="Evite deixar algum campo em branco!\nPreencha todos os campos da tela de login!")
-        else:
-
-            # Get dados no SQL
-            self.func_conectar_login()
-            self.cursor.execute("""
-                SELECT * FROM Professores Where (Email =? OR Senha =?)""", (self.var_email, self.var_senha))
+        else:   
+            self.conectar = sqlite3.connect("banco\\banco.db")
+            self.cursor = self.conectar.cursor()
+            self.cursor.execute("""SELECT * FROM Professores Where (Email =? OR Senha =?)""", (self.var_email, self.var_senha))
             self.check_dados = self.cursor.fetchone()
 
             # Verificar se o cadastro ja existe.
             if self.check_dados:
-
-                # dados
                 email_db = self.check_dados[9]
                 senha_db = self.check_dados[10]
 
                 if(self.var_email in email_db):
                     if(self.var_senha in senha_db):
-                        messagebox.showinfo(title="Sistema de cadastro", message="Login efetuado com sucesso!")
+                        messagebox.showinfo(title="Sistema de cadastro", message="Login efetuado com sucesso!")                    
                         Screen_Principal()
                     else:
                         messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente sua senha!\nE tente novamente efetuar o login")
@@ -61,24 +47,25 @@ class SQL_Login():
                         messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email!\nE tente novamente efetuar o login")
                 else:
                     messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email e senha!\nE tente novamente efetuar o login")
-
             else:
                 messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email e senha!\nE tente novamente efetuar o login")
-            
+                
             # Fechar Banco
-            self.func_desconectar_login()
+            self.conectar.close()
 
 # Class Tela de Login
 class Screen_Login(SQL_Login):
 
     # Main
     def __init__(self):
-        self.tela_login = Tk()
 
-        # Configurações da tela
-        self.config_telalogin()
-
-        # Carregar Tela
+        # Configurações
+        self.tela_login = Tk()        
+        self.config_telalogin()   
+        self.sql_login = SQL_Main()
+        self.sql_login.func_criartabela_professores()
+        self.sql_login.func_criartabela_grupos()
+        self.sql_login.func_criartabela_apresentacao()
         self.tela_login.mainloop()
         
     # Configuração da tela #
@@ -189,7 +176,6 @@ class Screen_Login(SQL_Login):
 
     def abrir_cadastro(self):
         Screen_CadProfessor(self.tela_login)
-
 
 # Criar Janela
 if __name__ == "__main__":
