@@ -4,6 +4,10 @@ import sqlite3
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+from main_telalogin import Screen_Login
+from main_updateprofessor import Screen_UpdateProfessor
+from main_relatorio_agendamentos import Screen_RelatorioAgendamentos
+from main_relatorio_grupos import Screen_RelatorioGrupos
 
 # Classe SQL Principal
 class SQL_MenuPrincipal():
@@ -117,13 +121,13 @@ class SQL_MenuPrincipal():
         except:
             pass
 
-
 # Class Tela de Login
 class Screen_Principal(SQL_MenuPrincipal):
-    def __init__(self):
+    def __init__(self, email):
 
         # Configurações
         self.janela = Tk()        
+        self.email_id = email
         self.config_telaprincipal()
         self.janela.mainloop()
 
@@ -135,10 +139,11 @@ class Screen_Principal(SQL_MenuPrincipal):
         style.theme_use("vista") # ou 'alt', 'default', 'vista'
         style.configure("TButton", font=("Segoe UI", 10), padding = 10, foreground="black", background="#ffffff")
 
+
         # Configurar de tamanho da tela
         self.janela.title("Menu Principal")
         x_frm_padrao = 900
-        y_frm_padrao = 850
+        y_frm_padrao = 700
         x_tela = self.janela.winfo_screenwidth()
         y_tela = self.janela.winfo_screenheight()
         x = (x_tela // 2) - (x_frm_padrao // 2)
@@ -146,43 +151,32 @@ class Screen_Principal(SQL_MenuPrincipal):
         self.janela.geometry(f"{x_frm_padrao}x{y_frm_padrao}+{x}+{y}")
         self.janela.resizable(False, False)
         self.janela.configure(background="#ffffff")
+        self.janela.minsize(900, 700)
 
         # Menu ID
         menubar_id = Menu(self.janela)   
 
         # Arquivos
         menubar_file = Menu(menubar_id, tearoff=0)
-        menubar_file.add_command(label="Editar Perfil")
-        menubar_file.add_command(label="Importar Banco de dados")
-        menubar_file.add_command(label="Exportar Banco de dados")
+        menubar_file.add_command(label="Editar Perfil", command=lambda: Screen_UpdateProfessor(self.janela, emailuser=self.email_id))
         menubar_file.add_separator()
-        menubar_file.add_command(label="Sair")
+        menubar_file.add_command(label="Sair", command=lambda:[self.janela.destroy(), Screen_Login(1)])
         menubar_id.add_cascade(label="Arquivo", menu=menubar_file)
 
-        # Cadastros
-        menubar_cadastro = Menu(menubar_id, tearoff=0)
-        menubar_cadastro.add_command(label="Cadastrar grupo")
-        menubar_cadastro.add_command(label="Cadastrar trabalhos")
-        menubar_id.add_cascade(label="Cadastros", menu=menubar_cadastro)
-
-        # Cadastros
+        # Relatorios
         menubar_relatorio = Menu(menubar_id, tearoff=0)
-        menubar_relatorio.add_command(label="Grupos agendados")
-        menubar_relatorio.add_command(label="Grupos cadastrados")
+        menubar_relatorio.add_command(label="Grupos agendados", command=lambda:Screen_RelatorioAgendamentos())
+        menubar_relatorio.add_command(label="Grupos cadastrados", command=lambda: Screen_RelatorioGrupos())
         menubar_id.add_cascade(label="Relatórios", menu=menubar_relatorio)
-
-        # Cadastros
-        menubar_sac = Menu(menubar_id, tearoff=0)
-        menubar_id.add_cascade(label="Relatar problema", menu=menubar_sac)
 
         # Mostrar Menu
         self.janela.config(menu=menubar_id) 
 
         # Frames
-        fmr_lagendamentos = ttk.Frame(self.janela, width=880, height=230,borderwidth=1,style="TButton")
-        fmr_lagendamentos.place(x=10, y= 180)
+        fmr_lagendamentos = ttk.Frame(self.janela, width=880, height=100,borderwidth=1,style="TButton")
+        fmr_lagendamentos.place(x=10, y= 150, height=200)
         fmr_grupos = ttk.Frame(self.janela, width=880, height=100,borderwidth=1,style="TButton")
-        fmr_grupos.place(x=10, y= 600)
+        fmr_grupos.place(x=10, y= 535, height=160)
 
         # Defs Adicionais
         def get_itens_agendamentos(event):
@@ -274,12 +268,12 @@ class Screen_Principal(SQL_MenuPrincipal):
         # Tabela de grupos cadastrados
         grupos_tabela = ttk.Treeview(fmr_grupos, columns=("grupo", "tema", "integrantes"), show="headings")
         grupos_tabela.heading("grupo", text="Grupo")
-        grupos_tabela.column("grupo", width=138, stretch=True)
+        grupos_tabela.column("grupo", width=138, stretch=True, anchor=CENTER)
         grupos_tabela.heading("tema", text="Tema")
-        grupos_tabela.column("tema", width=260, stretch=True)
-        grupos_tabela.heading("integrantes", text="Integrantes")
-        grupos_tabela.column("integrantes", width=480, stretch=True)
-        grupos_tabela.pack(fill="both", expand=True)
+        grupos_tabela.column("tema", width=260, stretch=True, anchor=CENTER)
+        grupos_tabela.heading("integrantes", text="Integrantes", anchor=CENTER)
+        grupos_tabela.column("integrantes", width=480, stretch=True, anchor=CENTER)
+        grupos_tabela.pack(fill="both", expand=True, anchor=CENTER)
         grupos_tabela.bind("<<TreeviewSelect>>", get_itens_grupos)
 
         # Def Atualizar Frames
@@ -297,11 +291,21 @@ class Screen_Principal(SQL_MenuPrincipal):
         # Forçar atualização Grupos
         atualizar_grupos()
 
+        # Atualizar Nomes
+        def atualizar_professores():
+            conectar = self.func_conectar()
+            cursor = conectar.cursor()               
+            cursor.execute("SELECT Nome FROM Professores")
+            dados = cursor.fetchall()
+            nomes = [linha[0] for linha in dados]
+            etr_professor['values'] = nomes
+            etr_professor.place(x=410, y=70,height=23,width=150)
+
         # Tema
         lbl_tema = ttk.Label(self.janela, text=f"Tema do grupo", font=("Microsoft yahei ui light", 12), background="#ffffff")
-        lbl_tema.place(x=60, y=40)  
+        lbl_tema.place(x=60, y=20)  
         etr_tema = ttk.Entry(self.janela, width=32, font=("Microsoft yahei ui light", 10))
-        etr_tema.place(x=50, y=70,height=23,width=180)        
+        etr_tema.place(x=50, y=50,height=23,width=180)        
 
         # Grupos Cadastrados
         conectar = self.func_conectar()
@@ -310,10 +314,10 @@ class Screen_Principal(SQL_MenuPrincipal):
         dados = cursor.fetchall()
         nomes = [linha[0] for linha in dados]
         lbl_grupos = ttk.Label(self.janela, text=f"Grupos", font=("Microsoft yahei ui light", 12), background="#ffffff")
-        lbl_grupos.place(x=250, y=40)  
+        lbl_grupos.place(x=250, y=20)  
         etr_grupos = ttk.Combobox(self.janela, width=32, font=("Microsoft yahei ui light", 10), state="readonly")
         etr_grupos['values'] = nomes
-        etr_grupos.place(x=240, y=70,height=23,width=150)
+        etr_grupos.place(x=240, y=50,height=23,width=150)
         
         # Professores
         cursor.execute("SELECT Nome FROM Professores")
@@ -321,57 +325,57 @@ class Screen_Principal(SQL_MenuPrincipal):
         nomes = [linha[0] for linha in dados]
         conectar.close()
         lbl_professor = ttk.Label(self.janela, text=f"Professor", font=("Microsoft yahei ui light", 12), background="#ffffff")
-        lbl_professor.place(x=420, y=40)  
+        lbl_professor.place(x=420, y=20)  
         etr_professor = ttk.Combobox(self.janela, width=32, font=("Microsoft yahei ui light", 10), state="readonly")
         etr_professor['values'] = nomes
-        etr_professor.place(x=410, y=70,height=23,width=150)
+        etr_professor.place(x=410, y=50,height=23,width=150)
 
         # Data
         lbl_data = ttk.Label(self.janela, text=f"Data", font=("Microsoft yahei ui light", 12), background="#ffffff")
-        lbl_data.place(x=592, y=40)
+        lbl_data.place(x=592, y=20)
         etr_data = ttk.Entry(self.janela, width=32, font=("Microsoft yahei ui light", 10))
-        etr_data.place(x=580, y=70,height=23,width=140)
+        etr_data.place(x=580, y=50,height=23,width=140)
 
         # Horario
         lbl_horario = ttk.Label(self.janela, text=f"Horário", font=("Microsoft yahei ui light", 12), background="#ffffff")
-        lbl_horario.place(x=752, y=40)
+        lbl_horario.place(x=752, y=20)
         etr_horario = ttk.Entry(self.janela, width=32, font=("Microsoft yahei ui light", 10))
-        etr_horario.place(x=740, y=70,height=23,width=115)
+        etr_horario.place(x=740, y=50,height=23,width=115)
 
         # Botões
         btn_agendar = ttk.Button(self.janela, text="Agendar apresentação", style="TButton", command=lambda: [self.func_inserir_apresentacao(etr_tema.get(), etr_grupos.get(), etr_professor.get(), etr_data.get(), etr_horario.get()), atualizar_agendamentos()])
-        btn_agendar.place(x=80, y=115,height=45)
+        btn_agendar.place(x=80, y=90,height=45)
         btn_editar = ttk.Button(self.janela, text="Atualizar apresentação", style="TButton", command=lambda: [self.func_atualizar_apresentacao(etr_tema.get(), etr_grupos.get(), etr_professor.get(), etr_data.get(), etr_horario.get()), atualizar_agendamentos()])
-        btn_editar.place(x=270, y=115,height=45)
+        btn_editar.place(x=270, y=90,height=45)
         btn_remover = ttk.Button(self.janela, text="Remover apresentação", style="TButton", command=lambda: [deletar_agendamento(), atualizar_agendamentos()])
-        btn_remover.place(x=455, y=115,height=45)
+        btn_remover.place(x=455, y=90,height=45)
         btn_remover = ttk.Button(self.janela, text="Limpar apresentações", style="TButton", command=lambda: [self.func_deletar_all(), atualizar_agendamentos()])
-        btn_remover.place(x=660, y=115,height=45)
+        btn_remover.place(x=660, y=90,height=45)
 
         # Labels dos grupos
         lbl_addgrupo = ttk.Label(self.janela, text=f"Grupo", font=("Microsoft yahei ui light", 12), background="#ffffff")
-        lbl_addgrupo.place(x=70, y=455)
+        lbl_addgrupo.place(x=70, y=400)
         etr_addgrupo = ttk.Entry(self.janela, width=32, font=("Microsoft yahei ui light", 10))
-        etr_addgrupo.place(x=60, y=485,height=23,width=140)
+        etr_addgrupo.place(x=60, y=430,height=23,width=140)
         lbl_addtema = ttk.Label(self.janela, text=f"Tema do grupo", font=("Microsoft yahei ui light", 12), background="#ffffff")
-        lbl_addtema.place(x=280, y=455)
+        lbl_addtema.place(x=280, y=400)
         etr_addtema = ttk.Entry(self.janela, width=32, font=("Microsoft yahei ui light", 10))
-        etr_addtema.place(x=270, y=485,height=23,width=160)
+        etr_addtema.place(x=270, y=430,height=23,width=160)
         lbl_addintegrantes = ttk.Label(self.janela, text=f"Integrantes do grupo", font=("Microsoft yahei ui light", 12), background="#ffffff")
-        lbl_addintegrantes.place(x=475, y=455)
+        lbl_addintegrantes.place(x=475, y=400)
         etr_addintegrantes = ttk.Entry(self.janela, width=32, font=("Microsoft yahei ui light", 10))
-        etr_addintegrantes.place(x=455, y=485,height=23,width=400)
+        etr_addintegrantes.place(x=455, y=430,height=23,width=400)
 
         # Botões - Grupos
         btn_grupocad = ttk.Button(self.janela, text="Cadastrar grupo", style="TButton", command=lambda: [self.func_inserir_grupo(etr_addgrupo.get(), etr_addtema.get(), etr_addintegrantes.get()), atualizar_grupos()])
-        btn_grupocad.place(x=80, y=530,height=45)
+        btn_grupocad.place(x=80, y=470,height=45)
         btn_editargrup = ttk.Button(self.janela, text="Atualizar grupo", style="TButton", command=lambda: [self.func_atualizar_grupos(etr_addgrupo.get(), etr_addtema.get(), etr_addintegrantes.get()), atualizar_grupos()])
-        btn_editargrup.place(x=270, y=530,height=45)
+        btn_editargrup.place(x=270, y=470,height=45)
         btn_removergrup = ttk.Button(self.janela, text="Remover grupo", style="TButton", command=lambda: [deletar_grupo(), atualizar_grupos()])
-        btn_removergrup.place(x=455, y=530,height=45)
+        btn_removergrup.place(x=455, y=470,height=45)
         btn_removergrup = ttk.Button(self.janela, text="Limpar grupos", style="TButton", command=lambda: [self.func_deletar_all_grupos(), atualizar_grupos()])
-        btn_removergrup.place(x=660, y=530,height=45)
+        btn_removergrup.place(x=660, y=470,height=45)
 
 # Criar Janela
 if __name__ == "__main__":
-    Screen_Principal()
+    Screen_Principal("none")

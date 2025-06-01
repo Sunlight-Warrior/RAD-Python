@@ -7,67 +7,36 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 from main_bancodados import SQL_Main 
 from main_cadprofessor import Screen_CadProfessor
-from main_principal import Screen_Principal
 
 # PATH DIR
 dir_programa = os.path.dirname(__file__)
 
-# Classe de manipular o SQL para login
-class SQL_Login():
-    def func_efetuar_login(self, email, senha):
-
-        # Dados Para O SQL
-        self.var_email = email
-        self.var_senha = senha
-
-        if(self.var_email == "" or self.var_senha == ""):
-            messagebox.showerror(title="Sistema de login", message="Evite deixar algum campo em branco!\nPreencha todos os campos da tela de login!")
-        else:   
-            self.conectar = sqlite3.connect("banco\\banco.db")
-            self.cursor = self.conectar.cursor()
-            self.cursor.execute("""SELECT * FROM Professores Where (Email =? OR Senha =?)""", (self.var_email, self.var_senha))
-            self.check_dados = self.cursor.fetchone()
-
-            # Verificar se o cadastro ja existe.
-            if self.check_dados:
-                email_db = self.check_dados[9]
-                senha_db = self.check_dados[10]
-
-                if(self.var_email in email_db):
-                    if(self.var_senha in senha_db):
-                        messagebox.showinfo(title="Sistema de cadastro", message="Login efetuado com sucesso!")                    
-                        Screen_Principal()
-                    else:
-                        messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente sua senha!\nE tente novamente efetuar o login")
-                elif(self.var_senha in senha_db):
-                    if(self.var_email in email_db):
-                        messagebox.showinfo(title="Sistema de cadastro", message="Login efetuado com sucesso!")
-                        Screen_Principal()
-                    else:
-                        messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email!\nE tente novamente efetuar o login")
-                else:
-                    messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email e senha!\nE tente novamente efetuar o login")
-            else:
-                messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email e senha!\nE tente novamente efetuar o login")
-                
-            # Fechar Banco
-            self.conectar.close()
-
 # Class Tela de Login
-class Screen_Login(SQL_Login):
+class Screen_Login():
 
     # Main
-    def __init__(self):
+    def __init__(self, reload_menu):
 
-        # Configurações
-        self.tela_login = Tk()        
-        self.config_telalogin()   
-        self.sql_login = SQL_Main()
-        self.sql_login.func_criartabela_professores()
-        self.sql_login.func_criartabela_grupos()
-        self.sql_login.func_criartabela_apresentacao()
-        self.tela_login.mainloop()
-        
+        if(reload_menu == 1):
+            # Configurações
+            self.tela_login = Tk() 
+            self.config_telalogin()   
+            self.sql_login = SQL_Main()
+            self.sql_login.func_criartabela_professores()
+            self.sql_login.func_criartabela_grupos()
+            self.sql_login.func_criartabela_apresentacao()
+            self.tela_login.mainloop()
+        else:
+            # Configurações
+            self.tela_login = Tk() 
+            self.config_telalogin()   
+            self.sql_login = SQL_Main()
+            self.sql_login.func_criartabela_professores()
+            self.sql_login.func_criartabela_grupos()
+            self.sql_login.func_criartabela_apresentacao()
+            self.tela_login.mainloop()
+
+
     # Configuração da tela #
     def config_telalogin(self):
 
@@ -119,7 +88,7 @@ class Screen_Login(SQL_Login):
         etr_senha.config(foreground="gray")
 
         # Botões
-        btn_entrar = ttk.Button(self.tela_login, text="Entrar", style="TButton", command=lambda: self.func_efetuar_login(etr_email.get(), etr_senha.get()))
+        btn_entrar = ttk.Button(self.tela_login, text="Entrar", style="TButton", command=lambda: [self.func_efetuar_login(etr_email.get(), etr_senha.get())])
         btn_entrar.place(x=45, y=350,height=45)
         btn_sair = ttk.Button(self.tela_login, text="Sair", command=self.func_sair , style="TButton")
         btn_sair.place(x=205, y=350,height=45)
@@ -177,6 +146,49 @@ class Screen_Login(SQL_Login):
     def abrir_cadastro(self):
         Screen_CadProfessor(self.tela_login)
 
+    def func_efetuar_login(self, email, senha):
+
+        # Dados Para O SQL
+        self.var_email = email
+        self.var_senha = senha
+
+        if(self.var_email == "" or self.var_senha == ""):
+            messagebox.showerror(title="Sistema de login", message="Evite deixar algum campo em branco!\nPreencha todos os campos da tela de login!")
+        else:   
+            self.conectar = sqlite3.connect("banco\\banco.db")
+            self.cursor = self.conectar.cursor()
+            self.cursor.execute("""SELECT * FROM Professores Where (Email =? OR Senha =?)""", (self.var_email, self.var_senha))
+            self.check_dados = self.cursor.fetchone()
+
+            # Verificar se o cadastro ja existe.
+            if self.check_dados:
+                email_db = self.check_dados[9]
+                senha_db = self.check_dados[10]
+
+                if(self.var_email in email_db):
+                    if(self.var_senha in senha_db):
+                        messagebox.showinfo(title="Sistema de cadastro", message="Login efetuado com sucesso!")  
+                        self.tela_login.destroy()    
+                        from main_principal import Screen_Principal             
+                        Screen_Principal(email_db)
+                    else:
+                        messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente sua senha!\nE tente novamente efetuar o login")
+                elif(self.var_senha in senha_db):
+                    if(self.var_email in email_db):
+                        messagebox.showinfo(title="Sistema de cadastro", message="Login efetuado com sucesso!")
+                        self.tela_login.destroy()
+                        from main_principal import Screen_Principal
+                        Screen_Principal(email_db)                        
+                    else:
+                        messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email!\nE tente novamente efetuar o login")
+                else:
+                    messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email e senha!\nE tente novamente efetuar o login")
+            else:
+                messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email e senha!\nE tente novamente efetuar o login")
+                
+            # Fechar Banco
+            self.conectar.close()
+
 # Criar Janela
 if __name__ == "__main__":
-    Screen_Login()
+    Screen_Login(0)
