@@ -36,7 +36,6 @@ class Screen_Login():
             self.sql_login.func_criartabela_apresentacao()
             self.tela_login.mainloop()
 
-
     # Configuração da tela #
     def config_telalogin(self):
 
@@ -46,10 +45,10 @@ class Screen_Login():
         # Estilo da tela
         style = ttk.Style()
         style.theme_use("vista") # ou 'alt', 'default', 'vista'
-        style.configure("TButton", font=("Segoe UI", 12), padding = 5, foreground="black", background="#ffffff")
+        style.configure("TButton", font=("Segoe UI", 12), padding = 5, background="#ffffff", foreground="#000000")
         img_id = Image.open(dir_programa+"\\img\\img_login.png")
         icon_id = ImageTk.PhotoImage(img_id)
-        img_icon = Label(self.tela_login, image=icon_id,border=0)
+        img_icon = Label(self.tela_login, image=icon_id,border=0, background="#ffffff")
         img_icon.place(x=350, y=30)
 
         # Configurar de tamanho da tela
@@ -64,7 +63,7 @@ class Screen_Login():
         self.tela_login.configure(background="#ffffff")
 
         # Info & Frame
-        fmr_login = ttk.Frame(self.tela_login, width=338, height=400,borderwidth=1,style="TButton")
+        fmr_login = ttk.Frame(self.tela_login, width=338, height=400,borderwidth=2,style="TButton")
         fmr_login.place(x=10, y= 10)
         lbl_topo = ttk.Label(self.tela_login, text=f"Bem vindo", font=("Microsoft yahei ui light", 24), foreground="#00CCFF", background="#ffffff", anchor='center')
         lbl_topo.place(x=100, y=45)

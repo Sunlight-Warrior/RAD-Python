@@ -137,7 +137,7 @@ class Screen_Principal(SQL_MenuPrincipal):
         # Estilo da tela
         style = ttk.Style()
         style.theme_use("vista") # ou 'alt', 'default', 'vista'
-        style.configure("TButton", font=("Segoe UI", 10), padding = 10, foreground="black", background="#ffffff")
+        style.configure("TButton", font=("Segoe UI", 10), padding = 10, foreground="#000000", background="#ffffff")
 
 
         # Configurar de tamanho da tela
@@ -248,22 +248,7 @@ class Screen_Principal(SQL_MenuPrincipal):
         tabela.heading("hora", text="Hora marcada")
         tabela.column("hora", width=138, stretch=True, anchor=CENTER)
         tabela.pack(fill="both", expand=True)
-        tabela.bind("<<TreeviewSelect>>", get_itens_agendamentos)
-        
-        # Def Atualizar Frames
-        def atualizar_agendamentos():
-            conectar = self.func_conectar()
-            cursor = conectar.cursor()               
-            cursor.execute("SELECT tema, grupo, professor, data, hora FROM Apresentacao")
-            tabela_dados = cursor.fetchall()
-            for item in tabela.get_children(): 
-                tabela.delete(item)
-            for linha in tabela_dados:
-                tabela.insert("", "end", values=linha)
-            conectar.close()
-
-        # Forçar atualização ao abrir a tela
-        atualizar_agendamentos()
+        tabela.bind("<<TreeviewSelect>>", get_itens_agendamentos)        
 
         # Tabela de grupos cadastrados
         grupos_tabela = ttk.Treeview(fmr_grupos, columns=("grupo", "tema", "integrantes"), show="headings")
@@ -275,31 +260,6 @@ class Screen_Principal(SQL_MenuPrincipal):
         grupos_tabela.column("integrantes", width=480, stretch=True, anchor=CENTER)
         grupos_tabela.pack(fill="both", expand=True, anchor=CENTER)
         grupos_tabela.bind("<<TreeviewSelect>>", get_itens_grupos)
-
-        # Def Atualizar Frames
-        def atualizar_grupos():
-            conectar = self.func_conectar()
-            cursor = conectar.cursor()               
-            cursor.execute("SELECT grupo, tema, integrantes FROM Grupos")
-            tabela_dados = cursor.fetchall()
-            for item in grupos_tabela.get_children(): 
-                grupos_tabela.delete(item)
-            for linha in tabela_dados:
-                grupos_tabela.insert("", "end", values=linha)
-            conectar.close()
-
-        # Forçar atualização Grupos
-        atualizar_grupos()
-
-        # Atualizar Nomes
-        def atualizar_professores():
-            conectar = self.func_conectar()
-            cursor = conectar.cursor()               
-            cursor.execute("SELECT Nome FROM Professores")
-            dados = cursor.fetchall()
-            nomes = [linha[0] for linha in dados]
-            etr_professor['values'] = nomes
-            etr_professor.place(x=410, y=70,height=23,width=150)
 
         # Tema
         lbl_tema = ttk.Label(self.janela, text=f"Tema do grupo", font=("Microsoft yahei ui light", 12), background="#ffffff")
@@ -318,6 +278,16 @@ class Screen_Principal(SQL_MenuPrincipal):
         etr_grupos = ttk.Combobox(self.janela, width=32, font=("Microsoft yahei ui light", 10), state="readonly")
         etr_grupos['values'] = nomes
         etr_grupos.place(x=240, y=50,height=23,width=150)
+
+        # Atualizar Nomes
+        def atualizar_professores():
+            conectar = self.func_conectar()
+            cursor = conectar.cursor()               
+            cursor.execute("SELECT Nome FROM Professores")
+            dados = cursor.fetchall()
+            nomes = [linha[0] for linha in dados]
+            etr_professor.config(values=nomes)
+            conectar.close()    
         
         # Professores
         cursor.execute("SELECT Nome FROM Professores")
@@ -329,6 +299,7 @@ class Screen_Principal(SQL_MenuPrincipal):
         etr_professor = ttk.Combobox(self.janela, width=32, font=("Microsoft yahei ui light", 10), state="readonly")
         etr_professor['values'] = nomes
         etr_professor.place(x=410, y=50,height=23,width=150)
+        etr_professor.bind('<<ComboboxSelected>>', atualizar_professores())
 
         # Data
         lbl_data = ttk.Label(self.janela, text=f"Data", font=("Microsoft yahei ui light", 12), background="#ffffff")
@@ -376,6 +347,34 @@ class Screen_Principal(SQL_MenuPrincipal):
         btn_removergrup = ttk.Button(self.janela, text="Limpar grupos", style="TButton", command=lambda: [self.func_deletar_all_grupos(), atualizar_grupos()])
         btn_removergrup.place(x=660, y=470,height=45)
 
-# Criar Janela
-if __name__ == "__main__":
-    Screen_Principal("none")
+        # Def Atualizar Frames
+        def atualizar_agendamentos():
+            conectar = self.func_conectar()
+            cursor = conectar.cursor()               
+            cursor.execute("SELECT tema, grupo, professor, data, hora FROM Apresentacao")
+            tabela_dados = cursor.fetchall()
+            for item in tabela.get_children(): 
+                tabela.delete(item)
+            for linha in tabela_dados:
+                tabela.insert("", "end", values=linha)
+            conectar.close()
+
+        # Forçar atualização ao abrir a tela
+        atualizar_agendamentos()
+
+        # Def Atualizar Frames e ComboBox
+        def atualizar_grupos():
+            conectar = self.func_conectar()
+            cursor = conectar.cursor()               
+            cursor.execute("SELECT grupo, tema, integrantes FROM Grupos")
+            tabela_dados = cursor.fetchall()
+            nomes = [linha[0] for linha in tabela_dados]
+            for item in grupos_tabela.get_children(): 
+                grupos_tabela.delete(item)
+            for linha in tabela_dados:
+                grupos_tabela.insert("", "end", values=linha)
+            etr_grupos.config(values=nomes)
+            conectar.close()
+
+        # Forçar atualização Grupos
+        atualizar_grupos()

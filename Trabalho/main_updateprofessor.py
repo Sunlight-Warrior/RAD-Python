@@ -38,10 +38,8 @@ class SQL_UpdateProfessores():
                     , self.var_complemento, self.var_email, self.var_senha, self.var_unidade, self.var_telefone, self.oldemail))                            
                 self.conectar.commit()
                 messagebox.showinfo(title="Sistema de cadastro", message="Cadastro atualizado com sucesso!")
-                from main_principal import Screen_Principal
-                nomes = Screen_Principal()
-                nomes.atualizar
-                self.conectar.close()             
+                self.conectar.close()            
+                self.tela_updateprofessor.destroy() 
         except:
             self.conectar.close()   
         # else:
@@ -69,7 +67,7 @@ class Screen_UpdateProfessor(SQL_UpdateProfessores):
         # Estilo da tela
         style = ttk.Style()
         style.theme_use("vista") # ou 'alt', 'default', 'vista'
-        style.configure("TButton", font=("Segoe UI", 10), padding = 10, foreground="black", background="#ffffff")
+        style.configure("TButton", font=("Segoe UI", 10), padding = 10, foreground="#000000", background="#ffffff")
 
         # Configurar de tamanho da tela
         x_frm_padrao = 820

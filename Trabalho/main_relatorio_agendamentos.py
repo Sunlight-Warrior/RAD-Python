@@ -19,7 +19,7 @@ class Screen_RelatorioAgendamentos():
         # Estilo da tela
         style = ttk.Style()
         style.theme_use("vista") # ou 'alt', 'default', 'vista'
-        style.configure("TButton", font=("Segoe UI", 10), padding = 10, foreground="black", background="#ffffff")
+        style.configure("TButton", font=("Segoe UI", 10), padding = 10, foreground="#000000", background="#ffffff")
 
         # Configurar de tamanho da tela
         self.janela.title("Relatorio de trabalhos agendados")
