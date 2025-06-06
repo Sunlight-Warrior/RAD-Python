@@ -8,6 +8,13 @@ from main_telalogin import Screen_Login
 from main_updateprofessor import Screen_UpdateProfessor
 from main_relatorio_agendamentos import Screen_RelatorioAgendamentos
 from main_relatorio_grupos import Screen_RelatorioGrupos
+import datetime
+
+# LOGS 
+def salvar_log(mensagem):
+    with open("logs.txt", "a", encoding="utf-8") as arquivo:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        arquivo.write(f"[{timestamp}] {mensagem}\n")
 
 # Classe SQL Principal
 class SQL_MenuPrincipal():
@@ -130,6 +137,7 @@ class Screen_Principal(SQL_MenuPrincipal):
         self.email_id = email
         self.config_telaprincipal()
         self.janela.mainloop()
+        
 
     # Configuração da tela
     def config_telaprincipal(self):
@@ -138,7 +146,6 @@ class Screen_Principal(SQL_MenuPrincipal):
         style = ttk.Style()
         style.theme_use("vista") # ou 'alt', 'default', 'vista'
         style.configure("TButton", font=("Segoe UI", 10), padding = 10, foreground="#000000", background="#ffffff")
-
 
         # Configurar de tamanho da tela
         self.janela.title("Menu Principal")
@@ -208,29 +215,35 @@ class Screen_Principal(SQL_MenuPrincipal):
         def deletar_agendamento():
             selecionado = tabela.selection()
             if selecionado:
-                tabela_dados = selecionado[0]
-                tabela_itens = tabela.item(tabela_dados, "values")  
-                conectar = self.func_conectar()
-                cursor = conectar.cursor()  
-                cursor.execute("""DELETE FROM Apresentacao WHERE grupo = ?""", (tabela_itens[1], ))
-                conectar.commit()                
-                self.func_desconectar()
-                tabela.delete(tabela_dados)
-                messagebox.showinfo(title="Sistema de agendamento", message="Agendamento removido com sucesso!")
+                resposta = messagebox.askyesno("Confirmação", "Deseja realmente deletar este agendamento?")
+                if(resposta):
+                    tabela_dados = selecionado[0]
+                    tabela_itens = tabela.item(tabela_dados, "values")  
+                    conectar = self.func_conectar()
+                    cursor = conectar.cursor()  
+                    cursor.execute("""DELETE FROM Apresentacao WHERE grupo = ?""", (tabela_itens[1], ))
+                    conectar.commit()                
+                    self.func_desconectar()
+                    salvar_log(f"O usuário {self.email_id}  acabou de remover o agendamento do grupo {tabela_itens[1]} do banco de dados")
+                    tabela.delete(tabela_dados)
+                    messagebox.showinfo(title="Sistema de agendamento", message="Agendamento removido com sucesso!")
             else:
                 messagebox.showerror(title="Sistema de agendamento", message="Erro...Selecione qual agendamento deseja remover!")
         def deletar_grupo():
             selecionado = grupos_tabela.selection()
             if selecionado:
-                tabela_dados = selecionado[0]
-                tabela_itens = grupos_tabela.item(tabela_dados, "values")  
-                conectar = self.func_conectar()
-                cursor = conectar.cursor()  
-                cursor.execute("""DELETE FROM Grupos WHERE grupo = ?""", (tabela_itens[0], ))
-                conectar.commit()                
-                self.func_desconectar()
-                grupos_tabela.delete(tabela_dados)
-                messagebox.showinfo(title="Sistema de grupos", message="Grupo removido com sucesso!")
+                resposta = messagebox.askyesno("Confirmação", "Deseja realmente deletar este grupo?")
+                if(resposta):
+                    tabela_dados = selecionado[0]
+                    tabela_itens = grupos_tabela.item(tabela_dados, "values")  
+                    conectar = self.func_conectar()
+                    cursor = conectar.cursor()  
+                    cursor.execute("""DELETE FROM Grupos WHERE grupo = ?""", (tabela_itens[0], ))
+                    conectar.commit()                
+                    self.func_desconectar()
+                    salvar_log(f"O usuário {self.email_id}  acabou de remover o grupo {tabela_itens[1]} do banco de dados")
+                    grupos_tabela.delete(tabela_dados)
+                    messagebox.showinfo(title="Sistema de grupos", message="Grupo removido com sucesso!")
             else:
                 messagebox.showerror(title="Sistema de grupos", message="Erro...Selecione qual grupo deseja remover!")
 
@@ -314,13 +327,13 @@ class Screen_Principal(SQL_MenuPrincipal):
         etr_horario.place(x=740, y=50,height=23,width=115)
 
         # Botões
-        btn_agendar = ttk.Button(self.janela, text="Agendar apresentação", style="TButton", command=lambda: [self.func_inserir_apresentacao(etr_tema.get(), etr_grupos.get(), etr_professor.get(), etr_data.get(), etr_horario.get()), atualizar_agendamentos()])
+        btn_agendar = ttk.Button(self.janela, text="Agendar apresentação", style="TButton", command=lambda: [self.func_inserir_apresentacao(etr_tema.get(), etr_grupos.get(), etr_professor.get(), etr_data.get(), etr_horario.get()), atualizar_agendamentos(), salvar_log(f"O usuário {self.email_id} acabou de remover o agendamento do grupo {etr_grupos.get()} do banco de dados")])
         btn_agendar.place(x=80, y=90,height=45)
-        btn_editar = ttk.Button(self.janela, text="Atualizar apresentação", style="TButton", command=lambda: [self.func_atualizar_apresentacao(etr_tema.get(), etr_grupos.get(), etr_professor.get(), etr_data.get(), etr_horario.get()), atualizar_agendamentos()])
+        btn_editar = ttk.Button(self.janela, text="Atualizar apresentação", style="TButton", command=lambda: [self.func_atualizar_apresentacao(etr_tema.get(), etr_grupos.get(), etr_professor.get(), etr_data.get(), etr_horario.get()), atualizar_agendamentos(), salvar_log(f"O usuário {self.email_id} acabou de atualizar o agendamento do grupo {etr_grupos.get()} do banco de dados")])
         btn_editar.place(x=270, y=90,height=45)
-        btn_remover = ttk.Button(self.janela, text="Remover apresentação", style="TButton", command=lambda: [deletar_agendamento(), atualizar_agendamentos()])
+        btn_remover = ttk.Button(self.janela, text="Remover apresentação", style="TButton", command=lambda: [deletar_agendamento(), atualizar_agendamentos(), salvar_log(f"O usuário {self.email_id} acabou de remover o agendamento do grupo {etr_grupos.get()} do banco de dados")])
         btn_remover.place(x=455, y=90,height=45)
-        btn_remover = ttk.Button(self.janela, text="Limpar apresentações", style="TButton", command=lambda: [self.func_deletar_all(), atualizar_agendamentos()])
+        btn_remover = ttk.Button(self.janela, text="Limpar apresentações", style="TButton", command=lambda: [self.func_deletar_all(), atualizar_agendamentos(), salvar_log(f"O usuário {self.email_id} acabou de limpar os dados de todos os agendamentos cadastrados")])
         btn_remover.place(x=660, y=90,height=45)
 
         # Labels dos grupos
@@ -338,13 +351,13 @@ class Screen_Principal(SQL_MenuPrincipal):
         etr_addintegrantes.place(x=455, y=430,height=23,width=400)
 
         # Botões - Grupos
-        btn_grupocad = ttk.Button(self.janela, text="Cadastrar grupo", style="TButton", command=lambda: [self.func_inserir_grupo(etr_addgrupo.get(), etr_addtema.get(), etr_addintegrantes.get()), atualizar_grupos()])
+        btn_grupocad = ttk.Button(self.janela, text="Cadastrar grupo", style="TButton", command=lambda: [self.func_inserir_grupo(etr_addgrupo.get(), etr_addtema.get(), etr_addintegrantes.get()), atualizar_grupos(), salvar_log(f"O usuário {self.email_id} acabou de cadastrar o grupo {etr_addgrupo.get()} no banco de dados")])
         btn_grupocad.place(x=80, y=470,height=45)
-        btn_editargrup = ttk.Button(self.janela, text="Atualizar grupo", style="TButton", command=lambda: [self.func_atualizar_grupos(etr_addgrupo.get(), etr_addtema.get(), etr_addintegrantes.get()), atualizar_grupos()])
+        btn_editargrup = ttk.Button(self.janela, text="Atualizar grupo", style="TButton", command=lambda: [self.func_atualizar_grupos(etr_addgrupo.get(), etr_addtema.get(), etr_addintegrantes.get()), atualizar_grupos(), salvar_log(f"O usuário {self.email_id} acabou de atualizar os dados do grupo {etr_addgrupo.get()} no banco de dados")])
         btn_editargrup.place(x=270, y=470,height=45)
-        btn_removergrup = ttk.Button(self.janela, text="Remover grupo", style="TButton", command=lambda: [deletar_grupo(), atualizar_grupos()])
+        btn_removergrup = ttk.Button(self.janela, text="Remover grupo", style="TButton", command=lambda: [deletar_grupo(), atualizar_grupos(), salvar_log(f"O usuário {self.email_id} acabou de remover os dados do grupo {etr_addgrupo.get()} no banco de dados")])
         btn_removergrup.place(x=455, y=470,height=45)
-        btn_removergrup = ttk.Button(self.janela, text="Limpar grupos", style="TButton", command=lambda: [self.func_deletar_all_grupos(), atualizar_grupos()])
+        btn_removergrup = ttk.Button(self.janela, text="Limpar grupos", style="TButton", command=lambda: [self.func_deletar_all_grupos(), atualizar_grupos(), salvar_log(f"O usuário {self.email_id} acabou de limpar os dados de todos os grupos cadastrados")])
         btn_removergrup.place(x=660, y=470,height=45)
 
         # Def Atualizar Frames

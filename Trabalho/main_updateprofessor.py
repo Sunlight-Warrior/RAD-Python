@@ -3,6 +3,13 @@ import sqlite3
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+import datetime
+
+# LOGS 
+def salvar_log(mensagem):
+    with open("logs.txt", "a", encoding="utf-8") as arquivo:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        arquivo.write(f"[{timestamp}] {mensagem}\n")
 
 # Classe SQL Cadastros
 class SQL_UpdateProfessores():
@@ -37,6 +44,7 @@ class SQL_UpdateProfessores():
                     """, (self.var_nome, self.var_cpf, self.var_rg, self.var_data, self.var_cep, self.var_estado, self.var_endereco
                     , self.var_complemento, self.var_email, self.var_senha, self.var_unidade, self.var_telefone, self.oldemail))                            
                 self.conectar.commit()
+                salvar_log(f"O usuário {self.oldemail} atualizou os dados no banco de dados")
                 messagebox.showinfo(title="Sistema de cadastro", message="Cadastro atualizado com sucesso!")
                 self.conectar.close()            
                 self.tela_updateprofessor.destroy() 

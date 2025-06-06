@@ -3,6 +3,13 @@ import sqlite3
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+import datetime
+
+# LOGS 
+def salvar_log(mensagem):
+    with open("logs.txt", "a", encoding="utf-8") as arquivo:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        arquivo.write(f"[{timestamp}] {mensagem}\n")
 
 # Classe SQL Cadastros
 class SQL_CadProfessores():
@@ -53,7 +60,8 @@ class SQL_CadProfessores():
                             
                 self.conectar.commit()
                 messagebox.showinfo(title="Sistema de cadastro", message="Conta criada com sucesso!")
-                self.conectar.close()             
+                self.conectar.close()            
+                salvar_log(f"O usuário {self.var_nome} acabou de ser criado no sistema") 
         else:
             
             # Verificações
@@ -73,6 +81,7 @@ class SQL_CadProfessores():
                     self.conectar.commit()
                     messagebox.showinfo(title="Sistema de cadastro", message="Conta criada com sucesso!")
                     self.conectar.close()
+                    salvar_log(f"O usuário {self.var_nome} acabou de ser criado no sistema")
             except:
                 self.conectar.close()
 
@@ -205,7 +214,7 @@ class Screen_CadProfessor(SQL_CadProfessores):
         # Criar Botao
         btn_entrar = ttk.Button(self.tela_cadprofessor, text="Criar conta", style="TButton", command=lambda: [self.func_cadastrar_professor(
             etr_nome.get(), etr_cpf.get(), etr_rg.get(), etr_data.get(), etr_cep.get(), etr_estado.get(), etr_endereco.get(), etr_complemento.get(),
-            etr_email.get(), etr_senha.get(), etr_unidade.get(), etr_telefone.get()), limpar_campos()])
+            etr_email.get(), etr_senha.get(), etr_unidade.get(), etr_telefone.get()), limpar_campos(), salvar_log(f"Um usario com login {etr_email.get()} acabou de ser criado no banco de dados")])
         btn_entrar.place(x=550, y=265,height=60)
     
         # Sair

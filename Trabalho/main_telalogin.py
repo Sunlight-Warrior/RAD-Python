@@ -7,9 +7,16 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 from main_bancodados import SQL_Main 
 from main_cadprofessor import Screen_CadProfessor
+import datetime
 
 # PATH DIR
 dir_programa = os.path.dirname(__file__)
+
+# LOGS 
+def salvar_log(mensagem):
+    with open("logs.txt", "a", encoding="utf-8") as arquivo:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        arquivo.write(f"[{timestamp}] {mensagem}\n")
 
 # Class Tela de Login
 class Screen_Login():
@@ -167,17 +174,19 @@ class Screen_Login():
                 if(self.var_email in email_db):
                     if(self.var_senha in senha_db):
                         messagebox.showinfo(title="Sistema de cadastro", message="Login efetuado com sucesso!")  
+                        salvar_log(f"O usuário {email_db} acabou de entrar no sistema")
                         self.tela_login.destroy()    
                         from main_principal import Screen_Principal             
-                        Screen_Principal(email_db)
+                        Screen_Principal(email_db)                        
                     else:
                         messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente sua senha!\nE tente novamente efetuar o login")
                 elif(self.var_senha in senha_db):
                     if(self.var_email in email_db):
                         messagebox.showinfo(title="Sistema de cadastro", message="Login efetuado com sucesso!")
+                        salvar_log(f"O usuário {email_db} acabou de entrar no sistema")
                         self.tela_login.destroy()
                         from main_principal import Screen_Principal
-                        Screen_Principal(email_db)                        
+                        Screen_Principal(email_db)        
                     else:
                         messagebox.showerror(title="Sistema de login", message="Erro..Digite novamente seu email!\nE tente novamente efetuar o login")
                 else:
