@@ -1,6 +1,6 @@
 LEIA-ME
 
-Principais funcionalidades do programa.
+Principais funcionalidades do programa.\n
 • Criação de contas e sistema de login.
 • Edição dos dados de cadastro.
 • Adição de grupos (com opções para remover, modificar e limpar os dados no banco de dados).
